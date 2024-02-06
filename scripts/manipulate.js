@@ -1,6 +1,7 @@
 require("dotenv").config()
 
 const hre = require("hardhat")
+const config = require("../config.json")
 
 // -- IMPORT HELPER FUNCTIONS & CONFIG -- //
 const { getTokenAndContract, getPairContract, calculatePrice } = require('../helpers/helpers')
@@ -12,13 +13,13 @@ const V2_ROUTER_TO_USE = uRouter
 
 
 
-const UNLOCKED_ACCOUNT = '0xdEAD000000000000000042069420694206942069' // SHIB account to impersonate 
+const UNLOCKED_ACCOUNT = '0xF977814e90dA44bFA03b6295A0616a897441aceC' // SHIB account to impersonate 
 // const UNLOCKED_ACCOUNT = '0x9Bb75183646e2A0DC855498bacD72b769AE6ceD3' // LDO account to impersonate 
 // const UNLOCKED_ACCOUNT = '0x976A66BD0AA955924Ae47769Ab13B00004d3b8d6' // DYDX account to impersonate 
 // const AMOUNT = '43500000000000' // 40,500,000,000,000 SHIB -- Tokens will automatically be converted to wei
 // const AMOUNT = '1600000' // 7000000 LDO -- Tokens will automatically be converted to wei
 // const AMOUNT = '700000' // 7000000 DYDX -- Tokens will automatically be converted to wei
-const AMOUNT = '19000' // 7000000 ape -- Tokens will automatically be converted to wei
+const AMOUNT = '30000' // 7000000 ape -- Tokens will automatically be converted to wei
 
 async function main() {
   // Fetch contracts
@@ -31,11 +32,12 @@ async function main() {
 
   const pair = await getPairContract(V2_FACTORY_TO_USE, ARB_AGAINST.address, ARB_FOR.address, provider)
 
-  // Fetch price of SHIB/WETH before we execute the swap
+  // Fetch price of ARB/WETH before we execute the swap
   const priceBefore = await calculatePrice(pair)
 
   await manipulatePrice([ARB_AGAINST, ARB_FOR], token0Contract)
 
+  
   // Fetch price of SHIB/WETH after the swap
   const priceAfter = await calculatePrice(pair)
 
@@ -66,11 +68,14 @@ async function manipulatePrice(_path, _token0Contract) {
 
   const signer = await hre.ethers.getSigner(UNLOCKED_ACCOUNT)
 
-  
-  const approval = await _token0Contract.connect(signer).approve(await V2_ROUTER_TO_USE.getAddress(), amount, { gasLimit: 50000 })
+  // const signer = await hre.ethers.getImpersonatedSigner(UNLOCKED_ACCOUNT)
+
+  console.log(await _token0Contract.getAddress())
+
+  const approval = await _token0Contract.connect(signer).approve( await V2_ROUTER_TO_USE.getAddress(), amount, { gasLimit: 80000 })
   await approval.wait()
   console.log("APPROVED")
-
+  
   console.log(await _token0Contract.allowance(signer.address, await V2_ROUTER_TO_USE.getAddress()))
   console.log(await _token0Contract.balanceOf(signer.address))
   console.log(await _token0Contract.getAddress())

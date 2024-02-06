@@ -103,7 +103,7 @@ const checkPrice = async (_exchange, _token0, _token1) => {
 
   console.log(`Current Block: ${currentBlock}`)
   console.log(`-----------------------------------------`)
-  console.log(`UNISWAP   | ${_token1.symbol}/${_token0.symbol}\t | ${uFPrice}`)
+  console.log(`PANCAKESWAP   | ${_token1.symbol}/${_token0.symbol}\t | ${uFPrice}`)
   console.log(`SUSHISWAP | ${_token1.symbol}/${_token0.symbol}\t | ${sFPrice}\n`)
   console.log(`Percentage Difference: ${priceDifference}%\n`)
 
@@ -116,7 +116,7 @@ const determineDirection = async (_priceDifference) => {
   if (_priceDifference >= difference) {
 
     console.log(`Potential Arbitrage Direction:\n`)
-    console.log(`Buy\t -->\t Uniswap`)
+    console.log(`Buy\t -->\t PANCAKESWAP`)
     console.log(`Sell\t -->\t Sushiswap\n`)
     return [uRouter, sRouter]
 
@@ -124,7 +124,7 @@ const determineDirection = async (_priceDifference) => {
 
     console.log(`Potential Arbitrage Direction:\n`)
     console.log(`Buy\t -->\t Sushiswap`)
-    console.log(`Sell\t -->\t Uniswap\n`)
+    console.log(`Sell\t -->\t PANCAKESWAP\n`)
     return [sRouter, uRouter]
 
   } else {
@@ -140,11 +140,11 @@ const determineProfitability = async (_routerPath, _token0Contract, _token0, _to
   let exchangeToBuy, exchangeToSell
 
   if (await _routerPath[0].getAddress() === await uRouter.getAddress()) {
-    exchangeToBuy = "Uniswap"
+    exchangeToBuy = "PANCAKESWAP"
     exchangeToSell = "Sushiswap"
   } else {
     exchangeToBuy = "Sushiswap"
-    exchangeToSell = "Uniswap"
+    exchangeToSell = "PANCAKESWAP"
   }
 
   /**
@@ -194,7 +194,7 @@ const determineProfitability = async (_routerPath, _token0Contract, _token0, _to
     const wethBalanceBefore = Number(ethers.formatUnits(await _token0Contract.balanceOf(account.address), 'ether'))
     const wethBalanceAfter = amountDifference + wethBalanceBefore
     const wethBalanceDifference = wethBalanceAfter - wethBalanceBefore
-
+    const symbol = await _token0Contract.symbol()
     const data = {
       'ETH Balance Before': ethBalanceBefore,
       'ETH Balance After': ethBalanceAfter,
@@ -203,7 +203,7 @@ const determineProfitability = async (_routerPath, _token0Contract, _token0, _to
       'WETH Balance BEFORE': wethBalanceBefore,
       'WETH Balance AFTER': wethBalanceAfter,
       'WETH Gained/Lost': wethBalanceDifference,
-      '-': {},
+      // '-': {},
       'Total Gained/Lost': wethBalanceDifference - estimatedGasCost
     }
 
@@ -263,6 +263,7 @@ const executeTrade = async (_routerPath, _token0Contract, _token1Contract) => {
 
   const tokenBalanceDifference = tokenBalanceAfter - tokenBalanceBefore
   const ethBalanceDifference = ethBalanceBefore - ethBalanceAfter
+  const symbol = await _token0Contract.symbol()
 
   const data = {
     'ETH Balance Before': ethers.formatUnits(ethBalanceBefore, 'ether'),
@@ -272,6 +273,7 @@ const executeTrade = async (_routerPath, _token0Contract, _token1Contract) => {
     'WETH Balance BEFORE': ethers.formatUnits(tokenBalanceBefore, 'ether'),
     'WETH Balance AFTER': ethers.formatUnits(tokenBalanceAfter, 'ether'),
     'WETH Gained/Lost': ethers.formatUnits(tokenBalanceDifference.toString(), 'ether'),
+    symbol: symbol,
     '-': {},
     'Total Gained/Lost': `${ethers.formatUnits((tokenBalanceDifference - ethBalanceDifference).toString(), 'ether')} ETH`
   }
