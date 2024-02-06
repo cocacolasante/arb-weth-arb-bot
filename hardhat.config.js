@@ -11,6 +11,10 @@ module.exports = {
       forking: {
         url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ABRITRUM_API_KEY}`,
       }
+    },
+    arbitrum:{
+      url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ABRITRUM_API_KEY}`,
+      accounts: [process.env.PRIVATE_KEY]
     }
   }
 };
